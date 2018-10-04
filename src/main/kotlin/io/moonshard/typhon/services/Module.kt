@@ -4,4 +4,6 @@ import io.moonshard.typhon.repository.ModuleRepository
 import org.springframework.stereotype.Service
 
 @Service
-class ModuleService(val moduleRepository: ModuleRepository)
+class ModuleService(val moduleRepository: ModuleRepository) {
+
+}
