@@ -7,5 +7,7 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class DeviceController(val deviceService: DeviceService){
-
+    fun getAllModules(){}
+    fun sendCommand(){}
+    fun getModule(){}
 }

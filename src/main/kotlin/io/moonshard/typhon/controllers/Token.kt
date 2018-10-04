@@ -4,4 +4,7 @@ import io.moonshard.typhon.services.TokenService
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
-class TokenController(var tokenService: TokenService)
+class TokenController(var tokenService: TokenService){
+    fun valid(){}
+    fun new(){}
+}
