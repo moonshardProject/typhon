@@ -7,17 +7,20 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.Mono
 
-class LoginReq(var email: String?, var password:String?)
-
+class LoginReq(var email: String?, var password: String?)
+class RequestIsNotValid : Exception()
 
 
 @RestController("/user")
-class UserController(val userService:UserService){
+class UserController(val userService: UserService) {
+
     @PostMapping("/register")
-    fun register(@RequestBody req: User): Mono<*> {
-        if (!req.isValid()) {
-            // return error
+    fun register(@RequestBody req: User): Mono<Any> {
+        return if (!req.isValid()) {
+            Mono.just(RequestIsNotValid())
+        } else {
+            userService.register(req)
         }
-        return Mono.just("")
+
     }
 }

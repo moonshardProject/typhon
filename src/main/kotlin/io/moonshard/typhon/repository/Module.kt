@@ -5,4 +5,5 @@ import org.springframework.data.mongodb.repository.ReactiveMongoRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface ModuleRepository: ReactiveMongoRepository<Module, String>
+interface ModuleRepository: ReactiveMongoRepository<Module, String>{
+}
