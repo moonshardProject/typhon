@@ -2,6 +2,7 @@ package io.moonshard.typhon.services
 
 import io.moonshard.typhon.models.Event
 import io.moonshard.typhon.models.Module
+import io.moonshard.typhon.models.Token
 import io.moonshard.typhon.models.User
 import io.moonshard.typhon.repository.EventRepository
 import io.moonshard.typhon.repository.ModuleRepository
@@ -22,8 +23,8 @@ class ModuleService(val moduleRepository: ModuleRepository, val tokenService: To
                     Mono.just("${it.message}")
                 }
                 .map {
-                    val user: User? = it as User
-                    val module = Module(moduleId = null, userId = it.userId, moduleName = moduleName)
+                    val user: Token? = it as Token
+                    val module = Module(moduleId = null, userId = it.UserId, moduleName = moduleName)
                     moduleRepository.save(module)
                 }
     }
