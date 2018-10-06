@@ -4,7 +4,7 @@ import io.moonshard.typhon.Token
 import io.moonshard.typhon.TokenRepository
 import io.moonshard.typhon.User
 import io.moonshard.typhon.UserRepository
-import io.moonshard.typhon.controllers.NewTokenRequest
+import io.moonshard.typhon.NewTokenRequest
 import org.mindrot.jbcrypt.BCrypt
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono

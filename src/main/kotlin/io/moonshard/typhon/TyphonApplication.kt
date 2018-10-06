@@ -7,5 +7,6 @@ import org.springframework.boot.runApplication
 class TyphonApplication
 
 fun main(args: Array<String>) {
+
     runApplication<TyphonApplication>(*args)
 }

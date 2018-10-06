@@ -12,7 +12,7 @@ data class Device(@Id var deviceId: ObjectId?, var userId: ObjectId?, var device
     fun isValid() = validator.check(this)
 }
 
-
+@Document
 data class Event(var date: Date?,
                  var desc: String?,
                  var command: String?,
