@@ -1,21 +1,33 @@
 package io.moonshard.typhon.services
 
-import io.moonshard.typhon.models.User
-import io.moonshard.typhon.repository.UserRepository
+import io.moonshard.typhon.Token
+import io.moonshard.typhon.TokenRepository
+import io.moonshard.typhon.User
+import io.moonshard.typhon.UserRepository
+import io.moonshard.typhon.controllers.NewTokenRequest
 import org.mindrot.jbcrypt.BCrypt
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
+import java.util.*
 
 class EmailAlreadyExists : Exception("EmailAlreadyExists")
 class PhoneNumberAlreadyExists : Exception("PhoneNumberAlreadyExists")
 class DuplicateInfo(msg: String) : Exception(msg)
+class PasswordIsNotValid : Exception("PasswordIsNotValid")
+class TokenNotFound : Exception("TokenNotFound")
+class NotFound(param: String) : Exception("%sNotFound".format(param))
+class TokenValidRequest(var email: String? = null, var token: String? = null)
+class TokenIsNotValid : Exception("TokenIsNotValid")
 
 
+fun checkPassword(candid: String, password: String) = BCrypt.checkpw(candid, password)
+fun randomString() = UUID.randomUUID().toString().replace("-", "")
 fun hashPassword(password: String) = BCrypt.hashpw(password, BCrypt.gensalt())
 
 
 @Service
-class UserService(val userRepository: UserRepository) {
+class UserService(val userRepository: UserRepository,
+                  val tokenRepository: TokenRepository) {
     fun register(user: User): Mono<Any> {
         return checkForDuplicates(user)
                 .map {
@@ -26,6 +38,35 @@ class UserService(val userRepository: UserRepository) {
                         userRepository.save(user)
                     }
                 }
+    }
+
+    fun isValid(req: TokenValidRequest): Mono<Any> {
+        return userRepository.findByEmail(req.email!!)
+                .map {
+                    val user = it
+                    tokenRepository.findByData(req.token!!)
+                            .map {
+                                if (it.UserId!! != user.userId) {
+                                    TokenIsNotValid()
+                                } else {
+                                    it
+                                }
+                            }
+                            .switchIfEmpty(Mono.error(TokenNotFound()))
+                }
+
+    }
+
+    fun new(req: NewTokenRequest): Mono<Any> {
+        return userRepository.findByEmail(req.email!!)
+                .map {
+                    if (checkPassword(req.password!!, it.password!!)) {
+                        tokenRepository.save(Token(it.userId!!, randomString()))
+                    } else {
+                        PasswordIsNotValid()
+                    }
+                }
+                .switchIfEmpty(Mono.error(NotFound("email")))
     }
 
     fun checkForDuplicates(user: User): Mono<*> {

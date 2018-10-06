@@ -1,6 +1,6 @@
 package io.moonshard.typhon.controllers
 
-import io.moonshard.typhon.models.User
+import io.moonshard.typhon.User
 import io.moonshard.typhon.services.UserService
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -9,6 +9,8 @@ import reactor.core.publisher.Mono
 
 class LoginReq(var email: String?, var password: String?)
 class RequestIsNotValid : Exception()
+class NewTokenRequest(var email: String? = null,
+                      var password: String? = null)
 
 
 @RestController("/user")
@@ -21,6 +23,10 @@ class UserController(val userService: UserService) {
         } else {
             userService.register(req)
         }
+
+    }
+    @PostMapping("/token/new")
+    fun newTokenRequest(@RequestBody req: NewTokenRequest) {
 
     }
 }
