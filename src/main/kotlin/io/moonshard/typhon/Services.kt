@@ -1,10 +1,10 @@
 package io.moonshard.typhon
 
-import io.moonshard.typhon.services.*
+import org.omg.CosNaming.NamingContextPackage.NotFound
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import java.lang.Exception
+import kotlin.Exception
 
 
 class AddModuleRequest(email: String? = null, token: String? = null, moduleName: String? = null)
@@ -64,6 +64,7 @@ class Services(val deviceRepository: DeviceRepository,
     }
 
     fun isValid(req: TokenValidRequest): Mono<Any> {
+
         return userRepository.findByEmail(req.email!!)
                 .map {
                     val user = it
@@ -96,12 +97,12 @@ class Services(val deviceRepository: DeviceRepository,
         return doesEmailExist(user.email!!)
                 .map {
                     if (it is EmailAlreadyExists) {
-                        DuplicateInfo(it.message!!)
+                        DuplicateInfo()
                     } else {
                         doesPhoneNumberExist(user.phoneNumber!!)
                                 .map {
                                     if (it is PhoneNumberAlreadyExists) {
-                                        DuplicateInfo(it.message!!)
+                                        DuplicateInfo()
                                     }
                                 }
                     }
@@ -125,3 +126,12 @@ class Services(val deviceRepository: DeviceRepository,
     }
 
 }
+
+class NotFound(param: String) : Exception("${param} not found")
+class TokenNotFound : Exception("TokenIsNotFound")
+class TokenIsNotValid : Exception("TokenIsNotValid")
+class EmailAlreadyExists : Exception("EmailAlreadyExists")
+class PhoneNumberAlreadyExists : Exception("PhoneNumberAlreadyExists")
+class DuplicateInfo : Exception("DuplicateInfo")
+class TokenValidRequest(val email: String, val token: String)
+class PasswordIsNotValid : Exception("PasswordIsNotValid")
