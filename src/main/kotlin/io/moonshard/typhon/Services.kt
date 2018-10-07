@@ -1,33 +1,56 @@
-package io.moonshard.typhon.services
+package io.moonshard.typhon
 
-import io.moonshard.typhon.Token
-import io.moonshard.typhon.TokenRepository
-import io.moonshard.typhon.User
-import io.moonshard.typhon.UserRepository
-import io.moonshard.typhon.NewTokenRequest
-import org.mindrot.jbcrypt.BCrypt
+import io.moonshard.typhon.services.*
 import org.springframework.stereotype.Service
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import java.util.*
-
-class EmailAlreadyExists : Exception("EmailAlreadyExists")
-class PhoneNumberAlreadyExists : Exception("PhoneNumberAlreadyExists")
-class DuplicateInfo(msg: String) : Exception(msg)
-class PasswordIsNotValid : Exception("PasswordIsNotValid")
-class TokenNotFound : Exception("TokenNotFound")
-class NotFound(param: String) : Exception("%sNotFound".format(param))
-class TokenValidRequest(var email: String? = null, var token: String? = null)
-class TokenIsNotValid : Exception("TokenIsNotValid")
+import java.lang.Exception
 
 
-fun checkPassword(candid: String, password: String) = BCrypt.checkpw(candid, password)
-fun randomString() = UUID.randomUUID().toString().replace("-", "")
-fun hashPassword(password: String) = BCrypt.hashpw(password, BCrypt.gensalt())
-
+class AddModuleRequest(email: String? = null, token: String? = null, moduleName: String? = null)
 
 @Service
-class UserService(val userRepository: UserRepository,
-                  val tokenRepository: TokenRepository) {
+class Services(val deviceRepository: DeviceRepository,
+               val tokenRepository: TokenRepository,
+               val userRepository: UserRepository,
+               val eventRepository: DeviceRepository,
+               val moduleRepository: ModuleRepository) {
+    fun allDevices(email: String, token: String) {
+        isValid(TokenValidRequest(email, token))
+                .doOnError {
+                    "${it.message}"
+                }
+                .map {
+                    val token: Token? = it as Token
+                    deviceRepository
+                            .findByUserId(it.UserId!!)
+                }
+    }
+
+    fun addModule(email: String, token: String, moduleName: String): Mono<*> {
+        return isValid(TokenValidRequest(email, token))
+                .doOnError {
+                    Mono.just("${it.message}")
+                }
+                .map {
+                    val user: Token? = it as Token
+                    val module = Module(moduleId = null, userId = it.UserId, moduleName = moduleName)
+                    moduleRepository.save(module)
+                }
+    }
+
+    fun allEvents(email: String, token: String): Mono<Flux<Device>> {
+        return isValid(TokenValidRequest(email, token))
+                .doOnError { Mono.just("${it.message}") }
+                .map {
+                    val user: User? = it as User
+                    eventRepository
+                            .findByUserId(it.userId!!)
+                            .switchIfEmpty(Mono.error(Exception("NoEventFound")))
+                            .doOnError { Mono.just("${it.message}") }
+                }
+    }
+
     fun register(user: User): Mono<Any> {
         return checkForDuplicates(user)
                 .map {
@@ -100,4 +123,5 @@ class UserService(val userRepository: UserRepository,
                 }
 
     }
+
 }
